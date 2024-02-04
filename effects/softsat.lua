@@ -11,48 +11,47 @@
 -- onto (-1, 1) in a way that sounds much more pleasing to the ear
 -- than hard clipping.
 
-local wrap = require "util.wrap"
+local wrap = require("util.wrap")
 
-local defs = {name = 'SoftSat', knobs = {}}
+local defs = { name = "SoftSat", knobs = {} }
 
 defs.knobs.range = {
-    min     = 0.01,
-    max     = 2.0,
-    default = 1.0,
-    label   = 'Range',
+	min = 0.01,
+	max = 2.0,
+	default = 1.0,
+	label = "Range",
 
-    onChange = function(state, newRange)
-        state.normalizedRange = newRange * 2 / (state.public.hardness + 1)
-    end
+	onChange = function(state, newRange)
+		state.normalizedRange = newRange * 2 / (state.public.hardness + 1)
+	end,
 }
 
 defs.knobs.hardness = {
-    min     = 0.0,
-    max     = 0.99,
-    default = 0.5,
-    label   = 'Hardness',
+	min = 0.0,
+	max = 0.99,
+	default = 0.5,
+	label = "Hardness",
 
-    onChange = function(state, newHardness)
-        state.normalizedRange = state.public.range * 2 / (newHardness + 1)
-    end
+	onChange = function(state, newHardness)
+		state.normalizedRange = state.public.range * 2 / (newHardness + 1)
+	end,
 }
 
-
 function shape(x, g)
-    if x <= g then return x end
+	if x <= g then
+		return x
+	end
 
-    return g + (x-g)/(1 + ( (x-g)/(1-g) * (x-g)/(1-g) ))
+	return g + (x - g) / (1 + ((x - g) / (1 - g) * (x - g) / (1 - g)))
 end
-
 
 function defs.processOneSample(state, x)
-    local g = state.public.hardness
-    if x < 0 then
-        return -shape(-x / state.normalizedRange, g) * state.normalizedRange
-    else
-        return  shape( x / state.normalizedRange, g) * state.normalizedRange
-    end
+	local g = state.public.hardness
+	if x < 0 then
+		return -shape(-x / state.normalizedRange, g) * state.normalizedRange
+	else
+		return shape(x / state.normalizedRange, g) * state.normalizedRange
+	end
 end
-
 
 return wrap.wrapMachineDefs(defs)
